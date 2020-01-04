@@ -16,7 +16,7 @@ class InOutWidget(qtw.QWidget):
         super(InOutWidget, self).__init__()
         self.ui = Ui_InOutWidget()
         self.ui.setupUi(self)
-        #self.showFullScreen() 
+        self.showFullScreen() 
 
         self.ui.checkinButton.clicked.connect(lambda:self.whichbtnclicked(self.ui.checkinButton))
         self.ui.checkoutButton.clicked.connect(lambda:self.whichbtnclicked(self.ui.checkoutButton))
@@ -35,7 +35,7 @@ class MainWidget(qtw.QWidget):
         super(MainWidget, self).__init__()
         self.ui = Ui_MainWidget()
         self.ui.setupUi(self)  
-        #self.showFullScreen()      
+        self.showFullScreen()      
         
         self.ui.barcode.returnPressed.connect(self.checkInOut)
         self.show()
