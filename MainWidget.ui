@@ -31,7 +31,7 @@
     <widget class="QLabel" name="label">
      <property name="font">
       <font>
-       <pointsize>24</pointsize>
+       <pointsize>48</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
@@ -51,11 +51,11 @@
      </property>
      <property name="font">
       <font>
-       <pointsize>16</pointsize>
+       <pointsize>32</pointsize>
       </font>
      </property>
      <property name="text">
-      <string>This is a label</string>
+      <string/>
      </property>
      <property name="scaledContents">
       <bool>false</bool>

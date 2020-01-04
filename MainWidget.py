@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '.\MainWidget.ui'
+# Form implementation generated from reading ui file 'MainWidget.ui'
 #
 # Created by: PyQt5 UI code generator 5.13.0
 #
@@ -23,7 +23,7 @@ class Ui_MainWidget(object):
         self.verticalLayout.addWidget(self.logo, 0, QtCore.Qt.AlignHCenter|QtCore.Qt.AlignTop)
         self.label = QtWidgets.QLabel(MainWidget)
         font = QtGui.QFont()
-        font.setPointSize(24)
+        font.setPointSize(48)
         font.setBold(True)
         font.setWeight(75)
         self.label.setFont(font)
@@ -36,8 +36,9 @@ class Ui_MainWidget(object):
         sizePolicy.setHeightForWidth(self.message.sizePolicy().hasHeightForWidth())
         self.message.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(16)
+        font.setPointSize(32)
         self.message.setFont(font)
+        self.message.setText("")
         self.message.setScaledContents(False)
         self.message.setAlignment(QtCore.Qt.AlignCenter)
         self.message.setObjectName("message")
@@ -55,4 +56,3 @@ class Ui_MainWidget(object):
         _translate = QtCore.QCoreApplication.translate
         MainWidget.setWindowTitle(_translate("MainWidget", "TimeTrack4237"))
         self.label.setText(_translate("MainWidget", "Scan Your Barcode"))
-        self.message.setText(_translate("MainWidget", "This is a label"))
