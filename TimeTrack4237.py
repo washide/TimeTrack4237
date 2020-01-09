@@ -24,7 +24,6 @@ class InOutWidget(qtw.QWidget):
 
     @qtc.pyqtSlot(qtw.QPushButton)
     def whichbtnclicked(self, b):
-        print(f'{b.objectName()} was clicked')
         self.buttonclicked.emit(b.objectName())
         self.close()
 
@@ -69,23 +68,19 @@ class MainWidget(qtw.QWidget):
             self.ui.barcode.clear() 
         else:
             self.inoutwindow = InOutWidget()
-            print("Show checkInOut window")
             self.inoutwindow.buttonclicked.connect(self.processClickedButton)
             self.inoutwindow.show()
 
     @qtc.pyqtSlot(str)
+
     def processClickedButton(self, clickedbutton):
 
-        print(f'In processClickedButton: {clickedbutton}')
         message = None
         if (clickedbutton == 'cancelButton'):
-            print('Check in cancelled')
             message = 'Check in/out cancelled'
         elif (clickedbutton == 'checkinButton'):
-            print(f'{clickedbutton} clicked')
             message = checkinstudent(self.ui.barcode.text())
         elif (clickedbutton == 'checkoutButton'):
-            print(f'{clickedbutton} clicked')
             message = checkoutstudent(self.ui.barcode.text())
         else:
             print('In a place I should not be')
@@ -97,7 +92,6 @@ class MainWidget(qtw.QWidget):
 def checkinstudent(barcode_id):
 
     #Try to open the database
-    print (f'Inside of checkinstudent. barcode_id is {barcode_id}')
     dbconn = None
     return_message = None
     try:
@@ -115,7 +109,6 @@ def checkinstudent(barcode_id):
         cursor.execute(sql_statement, (barcode_id,))
         rowcount = cursor.fetchone()[0]
         cursor.close()
-        print (f'rowcount of not null checkin/null checkout is {rowcount}')
 
         # Rows found, so update the record. There should be just one... hopefully.
         if (rowcount == 1):
@@ -132,7 +125,6 @@ def checkinstudent(barcode_id):
             return_message = 'Check in successful'    
 
     except Exception as e:
-        # Roll back any change if something goes wrong
         raise e
     
     finally:
@@ -142,7 +134,6 @@ def checkinstudent(barcode_id):
 def checkoutstudent(barcode_id):
 
     #Try to open the database
-    print (f'Inside of checkoutstudent. barcode_id is {barcode_id}')
     dbconn = None
     return_message = None
     try:
@@ -152,7 +143,6 @@ def checkoutstudent(barcode_id):
         cursor.execute(sql_statement, (barcode_id,))
         rowcount = cursor.fetchone()[0]
         cursor.close()
-        print (f'rowcount of not null checkin/null checkout is {rowcount}')
 
         if (rowcount != 1):
             #cursor=dbconn.cursor()
@@ -170,7 +160,6 @@ def checkoutstudent(barcode_id):
             return_message = 'Check out successful'  
 
     except Exception as e:
-        # Roll back any change if something goes wrong
         raise e
     
     finally:
