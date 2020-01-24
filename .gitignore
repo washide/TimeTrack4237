@@ -130,3 +130,6 @@ dmypy.json
 
 # SQLite database stuff
 *.db
+
+# Test programs I don't want under version control
+sqltest.py
