@@ -1,5 +1,6 @@
 import sys
 import sqlite3
+import datetime
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtGui as qtg
 from PyQt5 import QtCore as qtc
@@ -12,11 +13,13 @@ class InOutWidget(qtw.QWidget):
 
     buttonclicked = qtc.pyqtSignal(str)
 
-    def __init__(self):
-        super(InOutWidget, self).__init__()
+    def __init__(self, studentName, *args, **kwargs):
+        super(InOutWidget, self, *args, **kwargs).__init__()
         self.ui = Ui_InOutWidget()
         self.ui.setupUi(self)
-        self.showFullScreen() 
+        self.ui.studentLabel.setText(studentName)
+        self.ui.studentLabel.setStyleSheet("QLabel { color : #cf2027;}")
+        #self.showFullScreen()
 
         self.ui.checkinButton.clicked.connect(lambda:self.whichbtnclicked(self.ui.checkinButton))
         self.ui.checkoutButton.clicked.connect(lambda:self.whichbtnclicked(self.ui.checkoutButton))
@@ -24,6 +27,9 @@ class InOutWidget(qtw.QWidget):
 
     @qtc.pyqtSlot(qtw.QPushButton)
     def whichbtnclicked(self, b):
+        self.ui.checkinButton.setEnabled(False)
+        self.ui.checkoutButton.setEnabled(False)
+        self.ui.cancelButton.setEnabled(False)
         self.buttonclicked.emit(b.objectName())
         self.close()
 
@@ -33,9 +39,8 @@ class MainWidget(qtw.QWidget):
         """MainWindow Constructor"""
         super(MainWidget, self).__init__()
         self.ui = Ui_MainWidget()
-        self.ui.setupUi(self)  
-        self.showFullScreen()      
-        
+        self.ui.setupUi(self)
+        #self.showFullScreen()      
         self.ui.barcode.returnPressed.connect(self.checkInOut)
         self.show()
 
@@ -43,17 +48,17 @@ class MainWidget(qtw.QWidget):
     def checkInOut(self):
 
         dbconn = None
-        barcode_exists = None
+        studentname = None
         barcode_id = self.ui.barcode.text()
         print(f'Barcode is {barcode_id}')
 
-        # Need to determine if the barcode matches up with a valid student in the databse
+        # Need to determine if the barcode matches up with a valid student in the database
         try:
             dbconn = sqlite3.connect(db_file, isolation_level=None)
             cursor=dbconn.cursor()
-            sql_statement = 'SELECT COUNT(*) FROM students WHERE id = ?'
+            sql_statement = 'SELECT name FROM students WHERE id = ?'
             cursor.execute(sql_statement, (barcode_id,))
-            barcode_exists = cursor.fetchone()[0]
+            studentname = cursor.fetchone()
             cursor.close()
 
         except Exception as e:
@@ -62,14 +67,16 @@ class MainWidget(qtw.QWidget):
         finally:
             dbconn.close()
 
-        if (barcode_exists != 1):
+        # If a student name was returned, meaning it's a valid bardcode, open the InOutWindget
+        if (studentname):
+            self.ui.message.setText(studentname[0])
+            self.inoutwindow = InOutWidget(studentname[0])
+            self.inoutwindow.buttonclicked.connect(self.processClickedButton)
+            self.inoutwindow.show()
+        else:
             self.ui.message.setText("No student match found")
             self.timer = qtc.QTimer.singleShot(3000, lambda:self.ui.message.clear())
             self.ui.barcode.clear() 
-        else:
-            self.inoutwindow = InOutWidget()
-            self.inoutwindow.buttonclicked.connect(self.processClickedButton)
-            self.inoutwindow.show()
 
     @qtc.pyqtSlot(str)
 
@@ -95,34 +102,23 @@ def checkinstudent(barcode_id):
     dbconn = None
     return_message = None
     try:
-        # If the barcode is good, insert a new activity record as required:
-        #   1. If there is an existing row with a checkin but no checkout,
-        #      update the row setting the checkout time to checkin time plus 
-        #      one hour or current time, whichever is less. This is for when
-        #      someone checks in 30 seconds after the prior checkin without
-        #      checking out.
-        #   2. If no existing rows or no existing rows from case #1, insert
-        #      a new row.
         dbconn = sqlite3.connect(db_file, isolation_level=None)
         cursor=dbconn.cursor()
+        # When a row exists with checkin but no checkout, student is checked in 
         sql_statement = 'SELECT COUNT(*) FROM activity WHERE id = ? AND checkin IS NOT NULL and checkout IS NULL'
         cursor.execute(sql_statement, (barcode_id,))
         rowcount = cursor.fetchone()[0]
         cursor.close()
 
-        # Rows found, so update the record. There should be just one... hopefully.
+        # Row found so let the user know they're already checked in
         if (rowcount == 1):
-            #cursor=dbconn.cursor()
-            #sql_statement = "UPDATE activity SET checkout = DATETIME('Now', 'localtime') WHERE id = ? AND checkin IS NOT NULL and checkout IS NULL"
-            #cursor.execute(sql_statement, (barcode_id,))
-            #cursor.close()
             return_message='You are already checked in. Check out first.'
         else:
             cursor=dbconn.cursor()
             sql_statement = "INSERT INTO activity (id, checkin, checkout) VALUES (?, DATETIME('Now', 'localtime'), NULL)"
             cursor.execute(sql_statement, (barcode_id,))
             cursor.close()
-            return_message = 'Check in successful'    
+            return_message = 'Checked in at ' + datetime.datetime.now().strftime("%I:%M%p")  
 
     except Exception as e:
         raise e
@@ -139,25 +135,20 @@ def checkoutstudent(barcode_id):
     try:
         dbconn = sqlite3.connect(db_file, isolation_level=None)
         cursor=dbconn.cursor()
+        # When a row exists with checkin but no checkout, student is checked in 
         sql_statement = 'SELECT COUNT(*) FROM activity WHERE id = ? AND checkin IS NOT NULL and checkout IS NULL'
         cursor.execute(sql_statement, (barcode_id,))
         rowcount = cursor.fetchone()[0]
         cursor.close()
 
         if (rowcount != 1):
-            #cursor=dbconn.cursor()
-            #sql_statement = "UPDATE activity SET checkout = DATETIME('Now', 'localtime') WHERE id = ? AND checkin IS NOT NULL and checkout IS NULL"
-            #cursor.execute(sql_statement, (barcode_id,))
-            #sql_statement = "UPDATE activity SET checkout = DATETIME('Now', 'localtime') WHERE id = ? AND checkin IS NOT NULL and checkout IS NULL"
-            #cursor.execute(sql_statement, (barcode_id,))
-            #cursor.close()
             return_message='You are not checked in. Check in first.'
         else:
             cursor=dbconn.cursor()
             sql_statement = "UPDATE activity SET checkout = DATETIME('Now', 'localtime') WHERE id = ? AND checkin IS NOT NULL and checkout IS NULL"
             cursor.execute(sql_statement, (barcode_id,))
             cursor.close()
-            return_message = 'Check out successful'  
+            return_message = 'Checked out at ' + datetime.datetime.now().strftime("%I:%M%p")
 
     except Exception as e:
         raise e
