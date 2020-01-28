@@ -12,4 +12,4 @@
 #--------------------------------------------------
 
 # Run script to checkout students who forgot
-0 2 * * * /home/pi/scripts/checkout_students.sh
+0 2 * * * /home/pi/TimeTrack4237/scripts/checkout_students.sh
