@@ -118,7 +118,7 @@ def checkinstudent(barcode_id):
             sql_statement = "INSERT INTO activity (id, checkin, checkout) VALUES (?, DATETIME('Now', 'localtime'), NULL)"
             cursor.execute(sql_statement, (barcode_id,))
             cursor.close()
-            return_message = 'Checked in at ' + datetime.datetime.now().strftime("%I:%M%p")  
+            return_message = 'Checked in'  
 
     except Exception as e:
         raise e
@@ -148,7 +148,13 @@ def checkoutstudent(barcode_id):
             sql_statement = "UPDATE activity SET checkout = DATETIME('Now', 'localtime') WHERE id = ? AND checkin IS NOT NULL and checkout IS NULL"
             cursor.execute(sql_statement, (barcode_id,))
             cursor.close()
-            return_message = 'Checked out at ' + datetime.datetime.now().strftime("%I:%M%p")
+            cursor=dbconn.cursor()
+            sql_statement = "SELECT SUM( ROUND( CAST( (JULIANDAY(checkout) - JULIANDAY(checkin)) * 24 AS REAL), 2)) FROM activity where id = ?"
+            cursor.execute(sql_statement, (barcode_id,))
+            totalhours = cursor.fetchone()[0]
+            cursor.close
+
+            return_message = 'Checked out. Total hours: ' + f'{totalhours:.2f}'
 
     except Exception as e:
         raise e
