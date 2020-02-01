@@ -133,3 +133,6 @@ dmypy.json
 
 # Test programs I don't want under version control
 sqltest.py
+
+# Credentials
+credentials/
